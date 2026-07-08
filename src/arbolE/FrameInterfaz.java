@@ -4,12 +4,14 @@
  */
 package arbolE;
 
+import javax.swing.JFrame;
+
 /**
  *
  * @author jesus
  */
 public class FrameInterfaz extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrameInterfaz.class.getName());
 
     /**
@@ -59,6 +61,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
         btnCodigo = new javax.swing.JButton();
         btnClean = new javax.swing.JButton();
         btnTabla = new javax.swing.JButton();
+        btnAgenteIA = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -237,21 +240,26 @@ public class FrameInterfaz extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        btnAgenteIA.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        btnAgenteIA.setText("Agente IA");
+        btnAgenteIA.addActionListener(this::btnAgenteIAActionPerformed);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(112, 112, 112)
                         .addComponent(lblExpresion, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtExpresion, javax.swing.GroupLayout.PREFERRED_SIZE, 412, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(btnCompilar, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnCompilar, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnAgenteIA, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -274,7 +282,8 @@ public class FrameInterfaz extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(txtExpresion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnCompilar))
+                        .addComponent(btnCompilar)
+                        .addComponent(btnAgenteIA))
                     .addComponent(lblExpresion, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -302,14 +311,35 @@ public class FrameInterfaz extends javax.swing.JFrame {
     }//GEN-LAST:event_btnTablaActionPerformed
 
     private void btnCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCompilarActionPerformed
-        String datos="";
+        String datos = "";
         ArbolJesusEspinosa a = new ArbolJesusEspinosa();
         datos = txtExpresion.getText();
-        
-        Nodo arbolExpresion=a.crear(datos);
+
+        Nodo arbolExpresion = a.crear(datos);
         txtReglas.setText("");
         txtReglas.append(a.getReglasEjecutadas());
     }//GEN-LAST:event_btnCompilarActionPerformed
+
+    private void btnAgenteIAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgenteIAActionPerformed
+        String datos = "";
+
+        ArbolIA arbol = new ArbolIA();
+        datos = txtExpresion.getText();
+        Nodo arbolExpresion = arbol.crear(datos); //Enviar los datos al árbol- expresión
+        txtReglas.append(arbol.getReglasEjecutadas());
+
+        JFrame ventana = new JFrame("Visualizador de Árboles - LyA2");
+        PanelArbol panel = new PanelArbol(arbolExpresion);
+
+        ventana.add(panel);
+        ventana.setSize(600, 400);
+        ventana.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        ventana.setLocationRelativeTo(null);
+        ventana.setVisible(true);
+
+        FrameArbolDibujado opcionesArbol = new FrameArbolDibujado(panel);
+        opcionesArbol.setVisible(true);
+    }//GEN-LAST:event_btnAgenteIAActionPerformed
 
     /**
      * @param args the command line arguments
@@ -337,6 +367,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAgenteIA;
     private javax.swing.JButton btnClean;
     private javax.swing.JButton btnCodigo;
     private javax.swing.JButton btnCompilar;

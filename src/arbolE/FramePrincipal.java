@@ -225,6 +225,7 @@ public class FramePrincipal extends javax.swing.JFrame {
     private void btnArbolExpresionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnArbolExpresionActionPerformed
         // TODO add your handling code here:
         Interfaz.setVisible(true);
+        this.dispose();
     }//GEN-LAST:event_btnArbolExpresionActionPerformed
 
     /**

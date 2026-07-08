@@ -8,11 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 import java.util.StringTokenizer;
+
 /**
  *
  * @author jesus
  */
 public class ArbolJesusEspinosa {
+
     //Atributos
     Stack<Nodo> arbolNodo;
     Stack<String> caracter;
@@ -81,7 +83,7 @@ public class ArbolJesusEspinosa {
         if (operador.equals("^")) {
             reglasEjecutadas.add("p" + paso + " E.nodo=new Nodo(^,E1.nodo,T.nodo)");
         }
-        if (operador.equals("=")){
+        if (operador.equals("=")) {
             reglasEjecutadas.add("p" + paso + " E.nodo=new Nodo(=,E1.nodo,T.nodo)");
         }
     }//fin guardar
@@ -89,13 +91,13 @@ public class ArbolJesusEspinosa {
     //Metodos del árbol
     public Nodo crear(String expresion) {
         StringTokenizer tokenizer = new StringTokenizer(expresion, espacios + aritmeticos, true);
-        
+
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
             System.out.println("Token " + token);
             if (espacios.contains(token)) {
                 System.out.println("Se trata de un espacio");
-            } else if (!aritmeticos.contains(token)){
+            } else if (!aritmeticos.contains(token)) {
                 arbolNodo.push(new Nodo(token));
                 paso++;
                 reglasEjecutadas.add("p" + paso + " T.nodo=new Hoja(id<" + token + ">,id.entrada_" + token + ")");
@@ -109,7 +111,7 @@ public class ArbolJesusEspinosa {
             } else {
                 if (!token.equals("(") && !caracter.empty()) {
                     String exa = caracter.peek();
-                    while (!caracter.empty() && !exa.equals("(") && prioridad(exa) >= prioridad(token)) {
+                    while (!caracter.empty() && !exa.equals("(") && obtenerPrioridad(exa) >= obtenerPrioridad(token)) {
                         guardar();
                         if (!caracter.empty()) {
                             exa = caracter.peek();
@@ -130,19 +132,20 @@ public class ArbolJesusEspinosa {
         return raiz;
     }//fin crear
 
-    private int prioridad(String operador) {
-        if (operador.equals("=")) {
-            return 0;
-        }
-        if (operador.equals("+") || operador.equals("-")) {
-            return 1;
-        }
-        if (operador.equals("*") || operador.equals("/")) {
-            return 2;
-        }
-        if (operador.equals("^")) {
-            return 3;
-        }
-        return -1;
-    } 
+    private int obtenerPrioridad(String operador) {
+        switch (operador) {
+            case "^":
+                return 3;
+            case "*":
+            case "/":
+                return 2;
+            case "+":
+            case "-":
+                return 1;
+            case "=":
+                return 0;
+            default:
+                return -1; // Para paréntesis u otros caracteres
+        }//switch
+    }//obtenerPrioridad
 }
