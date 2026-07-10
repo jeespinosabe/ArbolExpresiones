@@ -17,8 +17,21 @@ public class FrameInterfaz extends javax.swing.JFrame {
     /**
      * Creates new form FrameInterfaz
      */
+    //Atributos -9 de julio
+    String nPolaca;
     public FrameInterfaz() {
         initComponents();
+        nPolaca="";
+    }
+    
+    public void preOrden(Nodo n){
+        if(n!=null){
+            txtPreOrder.append(n.getDato()+"\n");
+            nPolaca+=txtNotacion.getText()+n.getDato()+" ";
+            txtNotacion.setText(txtNotacion.getText()+n.getDato()+" ");
+            preOrden(n.getIzquierdo());
+            preOrden(n.getDerecho());
+        }
     }
 
     /**
@@ -332,13 +345,15 @@ public class FrameInterfaz extends javax.swing.JFrame {
         PanelArbol panel = new PanelArbol(arbolExpresion);
 
         ventana.add(panel);
-        ventana.setSize(600, 400);
+        ventana.setSize(800, 600);
         ventana.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         ventana.setLocationRelativeTo(null);
         ventana.setVisible(true);
 
         FrameArbolDibujado opcionesArbol = new FrameArbolDibujado(panel);
         opcionesArbol.setVisible(true);
+        
+        preOrden(arbolExpresion);
     }//GEN-LAST:event_btnAgenteIAActionPerformed
 
     /**

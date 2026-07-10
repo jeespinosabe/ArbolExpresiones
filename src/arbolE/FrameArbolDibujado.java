@@ -33,13 +33,16 @@ public class FrameArbolDibujado extends javax.swing.JFrame {
     private void configurarSliders() {
         sldLineas.addChangeListener(e -> {
             if (panelArbol != null) {
+                // Este slider cambia el grosor de todas las líneas:
+                // líneas de conexión y contorno de los nodos.
                 panelArbol.setAnchoLineas(sldLineas.getValue());
             }
         });
 
         sldNodos.addChangeListener(e -> {
             if (panelArbol != null) {
-                panelArbol.setAnchoContornoNodos(sldNodos.getValue());
+                // Este slider cambia el tamaño del círculo del nodo.
+                panelArbol.setRadioNodo(sldNodos.getValue());
             }
         });
     }
@@ -49,11 +52,9 @@ public class FrameArbolDibujado extends javax.swing.JFrame {
             if (panelArbol == null) {
                 return;
             }
-            Color nuevoColor=JColorChooser.showDialog(
-                    this,"selecciona el color de las líneas",
-                    panelArbol.getColorLineas()
+            Color nuevoColor = JColorChooser.showDialog(this, "selecciona el color de todas las líneas",panelArbol.getColorLineas()
             );
-            if (nuevoColor != null) {
+            if (nuevoColor != null) {//Este botón cambia las líneas de conexión y el contorno de los nodos
                 panelArbol.setColorLineas(nuevoColor);
             }
         });
@@ -63,13 +64,10 @@ public class FrameArbolDibujado extends javax.swing.JFrame {
                 return;
             }
 
-            Color nuevoColor = JColorChooser.showDialog(
-                    this,"selecciona el color del contorno de los nodos",
-                    panelArbol.getColorContornoNodos()
-            );
+            Color nuevoColor = JColorChooser.showDialog(this,"selecciona el color de relleno de los nodos",panelArbol.getColorRellenoNodos());
 
-            if (nuevoColor!=null) {
-                panelArbol.setColorContornoNodos(nuevoColor);
+            if (nuevoColor != null) {//Este botón cambia el color del circulito del nodo.
+                panelArbol.setColorRellenoNodos(nuevoColor);
             }
         });
     }
@@ -102,11 +100,11 @@ public class FrameArbolDibujado extends javax.swing.JFrame {
 
         jLabel2.setText("Nodos");
 
-        sldNodos.setMaximum(15);
+        sldNodos.setMaximum(50);
         sldNodos.setMinimum(1);
-        sldNodos.setValue(2);
+        sldNodos.setValue(20);
 
-        sldLineas.setMaximum(15);
+        sldLineas.setMaximum(30);
         sldLineas.setMinimum(1);
         sldLineas.setValue(2);
 

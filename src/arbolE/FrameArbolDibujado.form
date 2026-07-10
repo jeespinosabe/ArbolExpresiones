@@ -86,14 +86,14 @@
     </Component>
     <Component class="javax.swing.JSlider" name="sldNodos">
       <Properties>
-        <Property name="maximum" type="int" value="15"/>
+        <Property name="maximum" type="int" value="50"/>
         <Property name="minimum" type="int" value="1"/>
-        <Property name="value" type="int" value="2"/>
+        <Property name="value" type="int" value="20"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JSlider" name="sldLineas">
       <Properties>
-        <Property name="maximum" type="int" value="15"/>
+        <Property name="maximum" type="int" value="30"/>
         <Property name="minimum" type="int" value="1"/>
         <Property name="value" type="int" value="2"/>
       </Properties>
