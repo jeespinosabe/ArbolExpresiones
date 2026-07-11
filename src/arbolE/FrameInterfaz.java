@@ -4,7 +4,13 @@
  */
 package arbolE;
 
+import java.awt.Desktop;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -19,20 +25,88 @@ public class FrameInterfaz extends javax.swing.JFrame {
      */
     //Atributos -9 de julio
     String nPolaca;
+
+    //10 de julio
+    int temp = 0;
+
+    private ArbolIA arbolIA;
+
     public FrameInterfaz() {
         initComponents();
-        nPolaca="";
+        nPolaca = "";
     }
-    
-    public void preOrden(Nodo n){
-        if(n!=null){
-            txtPreOrder.append(n.getDato()+"\n");
-            nPolaca+=txtNotacion.getText()+n.getDato()+" ";
-            txtNotacion.setText(txtNotacion.getText()+n.getDato()+" ");
+
+    public void preOrden(Nodo n) {
+        if (n != null) {
+            txtPreOrder.append(n.getDato() + "\n");
+            nPolaca += txtNotacion.getText() + n.getDato() + " ";
+            txtNotacion.setText(txtNotacion.getText() + n.getDato() + " ");
             preOrden(n.getIzquierdo());
             preOrden(n.getDerecho());
         }
     }
+
+    public void inOrden(Nodo n) {
+        if (n != null) {
+            inOrden(n.getIzquierdo());
+            txtInOrder.append(n.getDato() + "\n");
+            inOrden(n.getDerecho());
+        }
+    }//in
+
+    public void postOrden(Nodo n) {
+        if (n != null) {
+            postOrden(n.getIzquierdo());
+            postOrden(n.getDerecho());
+            txtPostOrden.append(n.getDato() + "\n");
+        }
+    }//Post
+
+    private void guardarReglasSemanticas() {
+        File archivo = new File("reglasSemanticas.txt");
+
+        try (BufferedWriter escritor = new BufferedWriter(new FileWriter(archivo))) {
+
+            // Guarda en el archivo todo lo que contiene txtReglas
+            escritor.write(txtReglas.getText());
+            System.out.println("se genero el archivo en: " + archivo.getAbsolutePath());
+        } catch (IOException ex) {
+            System.out.println("No se pudo generar el archivo reglasSemanticas.txt\n" + ex.getMessage());
+        }//catch
+    } //guardarReglasSemanticas
+
+    //=======Intermedio
+    public void intermedio(Nodo n) {
+        if (n != null) {
+            intermedio(n.getIzquierdo());
+            intermedio(n.getDerecho());
+            if (n.getIzquierdo() == null && n.getDerecho() == null) {
+                n.setLugar(n.getDato() + " ");
+                n.setCodigoIntermedio("");
+
+            } else {
+                if (n.getDato().equals("+") || n.getDato().equals("*")
+                        || n.getDato().equals("-") || n.getDato().equals("/")) {
+                    temp++;
+                    n.setLugar("T" + temp);
+                    Nodo izquierdo = n.getIzquierdo();
+                    Nodo derecho = n.getDerecho();
+                    String codigoI = "";
+                    codigoI = izquierdo.getCodigoIntermedio() + " " + derecho.getCodigoIntermedio() + " " + n.getLugar() + " = "
+                            + izquierdo.getLugar() + n.getDato() + " " + derecho.getLugar();
+                    n.setCodigoIntermedio(codigoI + "\n");
+                } else {
+                    if (n.getDato().equals("=")) {
+                        String codigoI = "";
+                        Nodo izquierdo = n.getIzquierdo();
+                        Nodo derecho = n.getDerecho();
+                        codigoI = derecho.getDato() + " " + izquierdo.getLugar() + " = T" + temp + "\n";
+                        n.setCodigoIntermedio(codigoI);
+                    }//equals =
+                }//equals +-*/
+            }//getDer getIzq
+        }//n!=null
+    }//intermedio
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -49,7 +123,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         txtPreOrder = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
-        txtCodigo3Secc = new javax.swing.JTextArea();
+        txtCodigo3Dir = new javax.swing.JTextArea();
         jScrollPane3 = new javax.swing.JScrollPane();
         txtInOrder = new javax.swing.JTextArea();
         jScrollPane4 = new javax.swing.JScrollPane();
@@ -75,6 +149,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
         btnClean = new javax.swing.JButton();
         btnTabla = new javax.swing.JButton();
         btnAgenteIA = new javax.swing.JButton();
+        btnOptimizar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -91,9 +166,9 @@ public class FrameInterfaz extends javax.swing.JFrame {
         txtPreOrder.setRows(5);
         jScrollPane1.setViewportView(txtPreOrder);
 
-        txtCodigo3Secc.setColumns(20);
-        txtCodigo3Secc.setRows(5);
-        jScrollPane2.setViewportView(txtCodigo3Secc);
+        txtCodigo3Dir.setColumns(20);
+        txtCodigo3Dir.setRows(5);
+        jScrollPane2.setViewportView(txtCodigo3Dir);
 
         txtInOrder.setColumns(20);
         txtInOrder.setRows(5);
@@ -181,11 +256,11 @@ public class FrameInterfaz extends javax.swing.JFrame {
             .addGroup(pnlMedioLayout.createSequentialGroup()
                 .addGap(15, 15, 15)
                 .addComponent(lblPre, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(99, 99, 99)
+                .addGap(41, 41, 41)
                 .addComponent(lblIn, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(94, 94, 94)
+                .addGap(56, 56, 56)
                 .addComponent(lblPost)
-                .addGap(98, 98, 98)
+                .addGap(60, 60, 60)
                 .addComponent(lblReglas)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(lblCodigo)
@@ -214,6 +289,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
 
         btnCodigo.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         btnCodigo.setText("Código de 3 direcciones");
+        btnCodigo.addActionListener(this::btnCodigoActionPerformed);
 
         btnClean.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         btnClean.setText("Clean");
@@ -257,6 +333,10 @@ public class FrameInterfaz extends javax.swing.JFrame {
         btnAgenteIA.setText("Agente IA");
         btnAgenteIA.addActionListener(this::btnAgenteIAActionPerformed);
 
+        btnOptimizar.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        btnOptimizar.setText("Optimizar");
+        btnOptimizar.addActionListener(this::btnOptimizarActionPerformed);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -264,22 +344,24 @@ public class FrameInterfaz extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(lblExpresion, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtExpresion, javax.swing.GroupLayout.PREFERRED_SIZE, 412, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(btnCompilar, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(btnAgenteIA, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnAgenteIA, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnOptimizar, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(36, 36, 36)
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 209, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(14, Short.MAX_VALUE))
@@ -292,12 +374,12 @@ public class FrameInterfaz extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(pnlSuperior, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(txtExpresion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnCompilar)
-                        .addComponent(btnAgenteIA))
-                    .addComponent(lblExpresion, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtExpresion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnCompilar)
+                    .addComponent(btnAgenteIA)
+                    .addComponent(lblExpresion, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnOptimizar))
                 .addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -316,30 +398,69 @@ public class FrameInterfaz extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCleanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCleanActionPerformed
-        // TODO add your handling code here:
+        txtExpresion.setText("");
+        txtCodigo3Dir.setText("");
+        txtPreOrder.setText("");
+        txtInOrder.setText("");
+        txtPostOrden.setText("");
+        txtReglas.setText("");
+        txtNotacion.setText("");
+        arbolIA = null;
+        nPolaca="";
     }//GEN-LAST:event_btnCleanActionPerformed
 
     private void btnTablaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTablaActionPerformed
-        // TODO add your handling code here:
+        String datos = txtExpresion.getText();
+        if (arbolIA == null) {
+            arbolIA = new ArbolIA();
+            arbolIA.crear(datos);
+        }
+
+        JOptionPane.showMessageDialog(this, arbolIA.tablaSimbolos);
     }//GEN-LAST:event_btnTablaActionPerformed
 
     private void btnCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCompilarActionPerformed
-        String datos = "";
-        ArbolJesusEspinosa a = new ArbolJesusEspinosa();
-        datos = txtExpresion.getText();
-
-        Nodo arbolExpresion = a.crear(datos);
+        txtCodigo3Dir.setText("");
+        txtPreOrder.setText("");
+        txtInOrder.setText("");
+        txtPostOrden.setText("");
         txtReglas.setText("");
-        txtReglas.append(a.getReglasEjecutadas());
-    }//GEN-LAST:event_btnCompilarActionPerformed
-
-    private void btnAgenteIAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgenteIAActionPerformed
+        txtNotacion.setText("");
         String datos = "";
+        temp=0;
 
-        ArbolIA arbol = new ArbolIA();
+        ArbolJesusEspinosa arbol = new ArbolJesusEspinosa();
         datos = txtExpresion.getText();
         Nodo arbolExpresion = arbol.crear(datos); //Enviar los datos al árbol- expresión
         txtReglas.append(arbol.getReglasEjecutadas());
+        intermedio(arbolExpresion);
+
+        preOrden(arbolExpresion);
+        inOrden(arbolExpresion);
+        postOrden(arbolExpresion);
+        guardarReglasSemanticas();
+        txtCodigo3Dir.append(arbolExpresion.getCodigoIntermedio());
+    }//GEN-LAST:event_btnCompilarActionPerformed
+
+    private void btnAgenteIAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgenteIAActionPerformed
+        txtCodigo3Dir.setText("");
+        txtPreOrder.setText("");
+        txtInOrder.setText("");
+        txtPostOrden.setText("");
+        txtReglas.setText("");
+        txtNotacion.setText("");
+        temp=0;
+        String datos = txtExpresion.getText();
+
+        //le puse este para que si ya están dados los valores no me los vuelva a pedir, a menos que le de en clean
+        if (arbolIA == null) {
+            arbolIA = new ArbolIA();
+        }
+
+        Nodo arbolExpresion = arbolIA.crear(datos);
+
+        txtReglas.append(arbolIA.getReglasEjecutadas());
+        intermedio(arbolExpresion);
 
         JFrame ventana = new JFrame("Visualizador de Árboles - LyA2");
         PanelArbol panel = new PanelArbol(arbolExpresion);
@@ -352,9 +473,35 @@ public class FrameInterfaz extends javax.swing.JFrame {
 
         FrameArbolDibujado opcionesArbol = new FrameArbolDibujado(panel);
         opcionesArbol.setVisible(true);
-        
+
         preOrden(arbolExpresion);
+        inOrden(arbolExpresion);
+        postOrden(arbolExpresion);
+        guardarReglasSemanticas();
+
+        txtCodigo3Dir.append(arbolExpresion.getCodigoIntermedio());
     }//GEN-LAST:event_btnAgenteIAActionPerformed
+
+    private void btnOptimizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOptimizarActionPerformed
+        File video = new File("Chat.mp4");
+        try {
+            Desktop.getDesktop().open(video);
+        } catch (IOException ex) {
+            System.out.println("No se encontro video :C");
+        }
+    }//GEN-LAST:event_btnOptimizarActionPerformed
+
+    private void btnCodigoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCodigoActionPerformed
+        txtCodigo3Dir.setText("");
+        temp = 0;
+        String datos = "";
+        ArbolJesusEspinosa arbol = new ArbolJesusEspinosa();
+        datos = txtExpresion.getText();
+        Nodo arbolExpresion = arbol.crear(datos); //Enviar los datos al árbol- expresión
+
+        intermedio(arbolExpresion);
+        txtCodigo3Dir.append(arbolExpresion.getCodigoIntermedio());
+    }//GEN-LAST:event_btnCodigoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -386,6 +533,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
     private javax.swing.JButton btnClean;
     private javax.swing.JButton btnCodigo;
     private javax.swing.JButton btnCompilar;
+    private javax.swing.JButton btnOptimizar;
     private javax.swing.JButton btnTabla;
     private Componentes.ImagenRedondeada imgFoto;
     private Componentes.ImagenRedondeada imgLogoCiscoScript;
@@ -407,7 +555,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
     private javax.swing.JPanel pnlInferior;
     private javax.swing.JPanel pnlMedio;
     private javax.swing.JPanel pnlSuperior;
-    private javax.swing.JTextArea txtCodigo3Secc;
+    private javax.swing.JTextArea txtCodigo3Dir;
     private javax.swing.JTextField txtExpresion;
     private javax.swing.JTextArea txtInOrder;
     private javax.swing.JTextField txtNotacion;

@@ -92,11 +92,10 @@ public class ArbolIA {
         Nodo izquierdo = arbolNodo.pop();
         String operador = caracter.pop();
 
-        // Reconstrucción del subárbol
+        //reconstruccion
         Nodo nuevoNodo = new Nodo(derecho, operador, izquierdo);
 
-        // Valor calculado del operador, por ejemplo:
-        // c=3, b=2, entonces * vale 6.
+        //valor calculado del operando
         nuevoNodo.setValor(calcularValor(operador, izquierdo.getValor(), derecho.getValor()));
 
         arbolNodo.push(nuevoNodo);
@@ -123,7 +122,7 @@ public class ArbolIA {
                 continue;
             }
 
-            if (aritmeticos.indexOf(token) < 0) {
+            if (!aritmeticos.contains(token)) {
                 paso++;
 
                 String regla = "T.nodo = new Hoja(id<" + token + ">,id.entrada_" + token + ")";
@@ -132,25 +131,31 @@ public class ArbolIA {
                 //=======SOLICITAR EL VALOR DEL TOKEN e insertar en TablaSimbolos
                 //1. Solicitar el valor para el token
                 String valorToken = regresaValex(token);
-
                 if (valorToken == null) {
-                    boolean valorValido = false;
-                    while (!valorValido) {
-                        try {
-                            valorToken = showInputDialog(null,"Ingresa el valor entero para el token: " + token,"Valor del token",QUESTION_MESSAGE);
-                            if (valorToken == null || valorToken.trim().isEmpty()) {
-                                valorToken = "0";
+                    //si el token ya es un número, se usa como su propio valor
+                    if (token.matches("\\d+")) {
+                        valorToken = token;
+                    } else {
+                        // Si no es un número, se solicita su valor
+                        boolean valorValido = false;
+                        while (!valorValido) {
+                            try {
+                                valorToken = showInputDialog(null,"Ingresa el valor entero para el token: " + token);
+
+                                if (valorToken == null || valorToken.trim().isEmpty()) {
+                                    valorToken = "0";
+                                }
+                                valorToken = valorToken.trim();
+
+                                // Aquí se valida que el valor sea entero
+                                Integer.parseInt(valorToken);
+                                valorValido = true;
+                            } catch (NumberFormatException e) {
+                                showMessageDialog(null,"Ingresa solo números enteros","Incorrecto",ERROR_MESSAGE);
                             }
-                            valorToken = valorToken.trim();
-                            //aquí se valida que el valor sea entero.
-                            Integer.parseInt(valorToken);
-                            valorValido = true;
-                        } catch (NumberFormatException e) {
-                            showMessageDialog(null,"Ingresa solo números enteros.","Valor incorrecto",ERROR_MESSAGE);
                         }
                     }
                 }
-
                 //2.Insertar en tablaSimbolo
                 agregaValex(token, valorToken);
                 //aquí se crea la hoja con su caracter y su valor.
