@@ -1,3 +1,4 @@
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
@@ -9,6 +10,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -28,6 +30,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
 
     //10 de julio
     int temp = 0;
+    FrameCuadruplos cuadruplos;
 
     private ArbolIA arbolIA;
 
@@ -148,6 +151,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
         btnCodigo = new javax.swing.JButton();
         btnClean = new javax.swing.JButton();
         btnTabla = new javax.swing.JButton();
+        btnGDA = new javax.swing.JButton();
         btnAgenteIA = new javax.swing.JButton();
         btnOptimizar = new javax.swing.JButton();
 
@@ -299,6 +303,10 @@ public class FrameInterfaz extends javax.swing.JFrame {
         btnTabla.setText("Tabla de símbolos");
         btnTabla.addActionListener(this::btnTablaActionPerformed);
 
+        btnGDA.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        btnGDA.setText("GDA");
+        btnGDA.addActionListener(this::btnGDAActionPerformed);
+
         javax.swing.GroupLayout pnlInferiorLayout = new javax.swing.GroupLayout(pnlInferior);
         pnlInferior.setLayout(pnlInferiorLayout);
         pnlInferiorLayout.setHorizontalGroup(
@@ -310,11 +318,13 @@ public class FrameInterfaz extends javax.swing.JFrame {
                 .addComponent(txtNotacion, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(45, 45, 45)
                 .addComponent(btnCodigo)
-                .addGap(53, 53, 53)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnGDA, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(btnClean, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(68, 68, 68)
+                .addGap(18, 18, 18)
                 .addComponent(btnTabla)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(16, 16, 16))
         );
         pnlInferiorLayout.setVerticalGroup(
             pnlInferiorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -325,7 +335,8 @@ public class FrameInterfaz extends javax.swing.JFrame {
                     .addComponent(txtNotacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnCodigo)
                     .addComponent(btnClean)
-                    .addComponent(btnTabla))
+                    .addComponent(btnTabla)
+                    .addComponent(btnGDA))
                 .addContainerGap())
         );
 
@@ -480,7 +491,54 @@ public class FrameInterfaz extends javax.swing.JFrame {
         guardarReglasSemanticas();
 
         txtCodigo3Dir.append(arbolExpresion.getCodigoIntermedio());
+
+        //mostrar las tripletas gen
+        ArrayList<String[]> tripletas = crearTripletas(arbolExpresion.getCodigoIntermedio());
+        FrameTripletas frameTripletas = new FrameTripletas(tripletas);
+        frameTripletas.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        frameTripletas.setVisible(true);
+
+        //mostrar los cuádruplos usando la interfaz original de FrameCuadruplos.
+        FrameCuadruplos frameCuadruplos = new FrameCuadruplos(arbolExpresion);
+        frameCuadruplos.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        frameCuadruplos.setVisible(true);
+        
     }//GEN-LAST:event_btnAgenteIAActionPerformed
+
+    private ArrayList<String[]> crearTripletas(String codigoIntermedio) {
+        ArrayList<String[]> tripletas = new ArrayList<>();
+        String[] lineas = codigoIntermedio.split("\n");
+
+        for (String linea : lineas) {
+            linea = linea.trim();
+
+            if (linea.isEmpty() || !linea.contains("=")) {
+                continue;
+            }
+
+            String[] partes = linea.split("=", 2);
+            String resultado = partes[0].trim();
+            String expresion = partes[1].trim();
+            String operador = "=";
+            String arg1 = expresion;
+            String arg2 = resultado;
+
+            for (String posibleOperador : new String[]{"+", "-", "*", "/", "^"}) {
+                int posicion = expresion.indexOf(posibleOperador);
+
+                if (posicion > 0) {
+                    operador = posibleOperador;
+                    arg1 = expresion.substring(0, posicion).trim();
+                    arg2 = expresion.substring(posicion + 1).trim();
+                    break;
+                }
+            }
+
+            tripletas.add(new String[]{operador, arg1, arg2});
+        }
+
+        return tripletas;
+    }
 
     private void btnOptimizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOptimizarActionPerformed
         File video = new File("Chat.mp4");
@@ -502,6 +560,36 @@ public class FrameInterfaz extends javax.swing.JFrame {
         intermedio(arbolExpresion);
         txtCodigo3Dir.append(arbolExpresion.getCodigoIntermedio());
     }//GEN-LAST:event_btnCodigoActionPerformed
+
+    private void btnGDAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGDAActionPerformed
+        String datos = txtExpresion.getText().trim();
+        if (datos.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ingresa una expresión antes de generar el GDA.");
+            return;
+        }
+
+        if (arbolIA == null) {
+            arbolIA = new ArbolIA();
+        }
+
+        Nodo arbolExpresion = arbolIA.crear(datos);
+        Nodo raizGDA = arbolIA.convertirAGAD(arbolExpresion);
+
+        JFrame ventanaGDA = new JFrame("Grafo dirigido acíclico - LyA2");
+        PanelGrafo panelGDA = new PanelGrafo(
+                raizGDA,
+                new java.awt.Color(230, 240, 255),
+                25,
+                java.awt.Color.BLACK,
+                2.0f
+        );
+
+        ventanaGDA.add(panelGDA);
+        ventanaGDA.setSize(800, 600);
+        ventanaGDA.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        ventanaGDA.setLocationRelativeTo(this);
+        ventanaGDA.setVisible(true);
+    }//GEN-LAST:event_btnGDAActionPerformed
 
     /**
      * @param args the command line arguments
@@ -533,6 +621,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
     private javax.swing.JButton btnClean;
     private javax.swing.JButton btnCodigo;
     private javax.swing.JButton btnCompilar;
+    private javax.swing.JButton btnGDA;
     private javax.swing.JButton btnOptimizar;
     private javax.swing.JButton btnTabla;
     private Componentes.ImagenRedondeada imgFoto;

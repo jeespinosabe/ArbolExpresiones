@@ -4,12 +4,15 @@
  */
 package arbolE;
 
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author jesus
  */
 public class FramePrincipal extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FramePrincipal.class.getName());
 
     /**
@@ -17,12 +20,13 @@ public class FramePrincipal extends javax.swing.JFrame {
      */
     
     FrameInterfaz Interfaz;
-    
+
     public FramePrincipal() {
         initComponents();
-        
+
         setLocationRelativeTo(null);
-        Interfaz=new FrameInterfaz();
+        Interfaz = new FrameInterfaz();
+        FrameCuadruplos cuadruplos;
     }
 
     /**
@@ -107,9 +111,10 @@ public class FramePrincipal extends javax.swing.JFrame {
 
         jButton2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jButton2.setText("Tripletas");
+        jButton2.addActionListener(this::jButton2ActionPerformed);
 
         jButton3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jButton3.setText("Optimización");
+        jButton3.setText("Asignación Ind.");
         jButton3.addActionListener(this::jButton3ActionPerformed);
 
         jButton4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -117,12 +122,14 @@ public class FramePrincipal extends javax.swing.JFrame {
 
         jButton5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jButton5.setText("Cuádruplos");
+        jButton5.addActionListener(this::jButton5ActionPerformed);
 
         jButton6.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jButton6.setText("Validación Métodos");
 
         jButton7.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jButton7.setText("Código intermedio");
+        jButton7.addActionListener(this::jButton7ActionPerformed);
 
         jButton8.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jButton8.setText("Notación Polaca");
@@ -219,7 +226,8 @@ public class FramePrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
+        SSADiagrama asignacionIndividual = new SSADiagrama();
+        asignacionIndividual.setVisible(true);
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void btnArbolExpresionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnArbolExpresionActionPerformed
@@ -227,6 +235,113 @@ public class FramePrincipal extends javax.swing.JFrame {
         Interfaz.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_btnArbolExpresionActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        Nodo arbolExpresion = solicitarArbolExpresion();
+        if (arbolExpresion == null) {
+            return;
+        }
+
+        generarCodigoIntermedio(arbolExpresion, new int[]{0});
+        FrameCuadruplos cuadruplos = new FrameCuadruplos(arbolExpresion);
+        cuadruplos.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        cuadruplos.setVisible(true);
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
+        Nodo arbolExpresion = solicitarArbolExpresion();
+        if (arbolExpresion == null) {
+            return;
+        }
+
+        generarCodigoIntermedio(arbolExpresion, new int[]{0});
+        ArrayList<String[]> tripletas = crearTripletas(arbolExpresion.getCodigoIntermedio());
+        FrameTripletas frameTripletas = new FrameTripletas(tripletas);
+        frameTripletas.setVisible(true);
+    }
+
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {
+        FrameDescripcion direcciones = new FrameDescripcion();
+        direcciones.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        direcciones.setVisible(true);
+    }
+
+    private Nodo solicitarArbolExpresion() {
+        String expresion = JOptionPane.showInputDialog(this, "Ingresa la expresión:");
+        if (expresion == null || expresion.trim().isEmpty()) {
+            return null;
+        }
+
+        ArbolIA arbol = new ArbolIA();
+        return arbol.crear(expresion.trim());
+    }
+
+    private void generarCodigoIntermedio(Nodo nodo, int[] temporal) {
+        if (nodo == null) {
+            return;
+        }
+
+        generarCodigoIntermedio(nodo.getIzquierdo(), temporal);
+        generarCodigoIntermedio(nodo.getDerecho(), temporal);
+
+        if (nodo.getIzquierdo() == null && nodo.getDerecho() == null) {
+            nodo.setLugar(nodo.getDato());
+            nodo.setCodigoIntermedio("");
+            return;
+        }
+
+        Nodo izquierdo = nodo.getIzquierdo();
+        Nodo derecho = nodo.getDerecho();
+
+        if ("+-*/^".contains(nodo.getDato())) {
+            temporal[0]++;
+            nodo.setLugar("T" + temporal[0]);
+            String codigo = izquierdo.getCodigoIntermedio()
+                    + derecho.getCodigoIntermedio()
+                    + nodo.getLugar() + " = " + izquierdo.getLugar()
+                    + " " + nodo.getDato() + " " + derecho.getLugar() + "\n";
+            nodo.setCodigoIntermedio(codigo);
+        } else if ("=".equals(nodo.getDato())) {
+            nodo.setLugar(izquierdo.getLugar());
+            String codigo = izquierdo.getCodigoIntermedio()
+                    + derecho.getCodigoIntermedio()
+                    + izquierdo.getLugar() + " = " + derecho.getLugar() + "\n";
+            nodo.setCodigoIntermedio(codigo);
+        }
+    }
+
+    private ArrayList<String[]> crearTripletas(String codigoIntermedio) {
+        ArrayList<String[]> tripletas = new ArrayList<>();
+        String[] lineas = codigoIntermedio.split("\n");
+
+        for (String linea : lineas) {
+            linea = linea.trim();
+            if (linea.isEmpty() || !linea.contains("=")) {
+                continue;
+            }
+
+            String[] partes = linea.split("=", 2);
+            String resultado = partes[0].trim();
+            String expresion = partes[1].trim();
+            String operador = "=";
+            String arg1 = expresion;
+            String arg2 = resultado;
+
+            for (String posible : new String[]{"+", "-", "*", "/", "^"}) {
+                int posicion = expresion.indexOf(posible);
+                if (posicion > 0) {
+                    operador = posible;
+                    arg1 = expresion.substring(0, posicion).trim();
+                    arg2 = expresion.substring(posicion + 1).trim();
+                    break;
+                }
+            }
+
+            tripletas.add(new String[]{operador, arg1, arg2});
+        }
+
+        return tripletas;
+    }
 
     /**
      * @param args the command line arguments

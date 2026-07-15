@@ -275,5 +275,41 @@ public class ArbolIA {
         } catch (NumberFormatException e) {
             return "";
         }
-    }//calcularValor
+    }//calcularValor}
+    
+    public Nodo convertirAGAD(Nodo raizAST) {
+        HashMap<String, Nodo> tabla = new HashMap<>();
+        return convertir(raizAST, tabla);
+    }
+
+    private Nodo convertir(Nodo n, HashMap<String, Nodo> tabla) {
+        if (n == null) return null;
+
+        if (n.getIzquierdo() == null && n.getDerecho() == null) {
+            String clave = "HOJA#" + n.getDato();
+            Nodo existente = tabla.get(clave);
+            if (existente != null) return existente; // reutiliza
+            tabla.put(clave, n);
+            return n;
+        }
+
+        // Procesar hijos primero (post-orden): así al llegar al padre
+        // ya sabemos si los hijos son nodos compartidos o no.
+        Nodo izqNuevo = convertir(n.getIzquierdo(), tabla);
+        Nodo derNuevo = convertir(n.getDerecho(), tabla);
+
+        // Reasignar hijos (puede que ahora apunten a nodos ya existentes)
+        n.setIzquierdo(izqNuevo);
+        n.setDerecho(derNuevo);
+
+        String clave = n.getDato() + "#" 
+                     + System.identityHashCode(izqNuevo) + "#" 
+                     + System.identityHashCode(derNuevo);
+
+        Nodo existente = tabla.get(clave);
+        if (existente != null) return existente; 
+
+        tabla.put(clave, n);
+        return n;
+    }
 }
