@@ -1,3 +1,8 @@
 p1 T.nodo = new Hoja(id<a>,id.entrada_a)
 p2 T.nodo = new Hoja(id<b>,id.entrada_b)
 p3 E.nodo = new Nodo(+,E1.nodo,T.nodo)
+p4 T.nodo = new Hoja(id<c>,id.entrada_c)
+p5 E.nodo = new Nodo(*,E1.nodo,T.nodo)
+p1 T.nodo = new Hoja(id<a>,id.entrada_a)
+p2 T.nodo = new Hoja(id<b>,id.entrada_b)
+p3 E.nodo = new Nodo(+,E1.nodo,T.nodo)
