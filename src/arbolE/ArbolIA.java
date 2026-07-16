@@ -32,6 +32,7 @@ public class ArbolIA {
 
     //30 de junio
     String[] temporales = {"T1", "T2", "T3", "T4", "T5"};
+    int temp;
 
     HashMap<String, String> tablaSimbolos;
     HashMap<String, String> erroresSemanticos;
@@ -42,8 +43,18 @@ public class ArbolIA {
     //1ro de Julio
     ArrayList<String> reglasEjecutadas;
 
+    //15 de julio
+    ArrayList<String[]> tripletas;
+
+    public String emu86;
+
     //Constructor
     public ArbolIA() {
+        emu86 = "; Espinosa Benitez Jesus\n"
+                + ".model small\n"
+                + ".stack\n"
+                + ".data\n";
+
         reglasEjecutadas = new ArrayList<String>();
         tablaSimbolos = new HashMap();
         erroresSemanticos = new HashMap();
@@ -52,12 +63,15 @@ public class ArbolIA {
         arbolNodo = new Stack<Nodo>();
         caracter = new Stack<String>();
 
+        tripletas = new ArrayList<>();
+
         r = "";
         reglaSemantica = "";
         paso = 0;
+        temp = 0;
     }//Fin del constructor
 
-    //*********REGLAS EJECUTADAS 1ro de Julio
+    //*********REGLAS EJECADAS 1ro de Julio
     public String getReglasEjecutadas() {
         String reglasE = "";
 
@@ -86,6 +100,7 @@ public class ArbolIA {
         }
 
         paso++;
+        temp++;
         r = "r" + paso;
 
         Nodo derecho = arbolNodo.pop();
@@ -100,6 +115,12 @@ public class ArbolIA {
 
         arbolNodo.push(nuevoNodo);
 
+        tripletas.add(new String[]{
+            operador,
+            izquierdo.getValor(),
+            derecho.getValor()
+        });
+
         String reglaE = "E.nodo = new Nodo(" + operador + ",E1.nodo,T.nodo)";
         reglasEjecutadas.add("p" + paso + " " + reglaE);
     }//guardar
@@ -110,8 +131,16 @@ public class ArbolIA {
         String token;
 
         paso = 0;
+        temp = 0;
         reglaSemantica = "";
         r = "";
+
+        tripletas.clear();
+
+        emu86 = "; Espinosa Benitez Jesus\n"
+                + ".model small\n"
+                + ".stack\n"
+                + ".data\n";
 
         tokenizer = new StringTokenizer(expresion, espacios + aritmeticos + "/", true);
 
@@ -131,6 +160,7 @@ public class ArbolIA {
                 //=======SOLICITAR EL VALOR DEL TOKEN e insertar en TablaSimbolos
                 //1. Solicitar el valor para el token
                 String valorToken = regresaValex(token);
+
                 if (valorToken == null) {
                     //si el token ya es un número, se usa como su propio valor
                     if (token.matches("\\d+")) {
@@ -138,32 +168,53 @@ public class ArbolIA {
                     } else {
                         // Si no es un número, se solicita su valor
                         boolean valorValido = false;
+
                         while (!valorValido) {
                             try {
-                                valorToken = showInputDialog(null,"Ingresa el valor entero para el token: " + token);
+                                valorToken = showInputDialog(
+                                        null,
+                                        "Ingresa el valor entero para el token: " + token
+                                );
 
                                 if (valorToken == null || valorToken.trim().isEmpty()) {
                                     valorToken = "0";
                                 }
+
                                 valorToken = valorToken.trim();
 
                                 // Aquí se valida que el valor sea entero
                                 Integer.parseInt(valorToken);
                                 valorValido = true;
                             } catch (NumberFormatException e) {
-                                showMessageDialog(null,"Ingresa solo números enteros","Incorrecto",ERROR_MESSAGE);
+                                showMessageDialog(
+                                        null,
+                                        "Ingresa solo números enteros",
+                                        "Incorrecto",
+                                        ERROR_MESSAGE
+                                );
                             }
                         }
                     }
                 }
+
                 //2.Insertar en tablaSimbolo
                 agregaValex(token, valorToken);
+
                 //aquí se crea la hoja con su caracter y su valor.
                 arbolNodo.push(new Nodo(token, valorToken));
 
+                //Agregar las variables al código EMU8086
+                if (!token.matches("\\d+")) {
+                    emu86 += token + " dw " + valorToken + "\n";
+                }
+
                 //3.mostrar en consola al finalizar en getReglasEjecutadas
                 if (!reglaSemantica.contains("Token: " + token + " |")) {
-                    reglaSemantica += "Token: " + token + " | Valor: " + regresaValex(token) + "\n";
+                    reglaSemantica += "Token: "
+                            + token
+                            + " | Valor: "
+                            + regresaValex(token)
+                            + "\n";
                 }
 
             } else if (token.equals("(")) {
@@ -251,6 +302,7 @@ public class ArbolIA {
                     if (derecho == 0) {
                         return "indefinido";
                     }
+
                     resultado = izquierdo / derecho;
                     break;
 
@@ -276,19 +328,25 @@ public class ArbolIA {
             return "";
         }
     }//calcularValor}
-    
+
     public Nodo convertirAGAD(Nodo raizAST) {
         HashMap<String, Nodo> tabla = new HashMap<>();
         return convertir(raizAST, tabla);
     }
 
     private Nodo convertir(Nodo n, HashMap<String, Nodo> tabla) {
-        if (n == null) return null;
+        if (n == null) {
+            return null;
+        }
 
         if (n.getIzquierdo() == null && n.getDerecho() == null) {
             String clave = "HOJA#" + n.getDato();
             Nodo existente = tabla.get(clave);
-            if (existente != null) return existente; // reutiliza
+
+            if (existente != null) {
+                return existente;
+            }// reutiliza
+
             tabla.put(clave, n);
             return n;
         }
@@ -302,14 +360,25 @@ public class ArbolIA {
         n.setIzquierdo(izqNuevo);
         n.setDerecho(derNuevo);
 
-        String clave = n.getDato() + "#" 
-                     + System.identityHashCode(izqNuevo) + "#" 
-                     + System.identityHashCode(derNuevo);
+        String clave = n.getDato() + "#"
+                + System.identityHashCode(izqNuevo) + "#"
+                + System.identityHashCode(derNuevo);
 
         Nodo existente = tabla.get(clave);
-        if (existente != null) return existente; 
+
+        if (existente != null) {
+            return existente;
+        }
 
         tabla.put(clave, n);
         return n;
+    }
+
+    public ArrayList<String[]> getTripletas() {
+        return tripletas;
+    }
+
+    public void setTripletas(ArrayList<String[]> tripletas) {
+        this.tripletas = tripletas;
     }
 }

@@ -11,6 +11,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -34,9 +37,19 @@ public class FrameInterfaz extends javax.swing.JFrame {
 
     private ArbolIA arbolIA;
 
+    //15 de julio
+    Nodo arbolExpresion;
+    String izq, der;
+    String emuLocal;
+    int Contador;
+
     public FrameInterfaz() {
         initComponents();
         nPolaca = "";
+
+        emuLocal = "";
+        izq = der = "";
+        Contador = 0;
     }
 
     public void preOrden(Nodo n) {
@@ -417,7 +430,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
         txtReglas.setText("");
         txtNotacion.setText("");
         arbolIA = null;
-        nPolaca="";
+        nPolaca = "";
     }//GEN-LAST:event_btnCleanActionPerformed
 
     private void btnTablaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTablaActionPerformed
@@ -438,7 +451,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
         txtReglas.setText("");
         txtNotacion.setText("");
         String datos = "";
-        temp=0;
+        temp = 0;
 
         ArbolJesusEspinosa arbol = new ArbolJesusEspinosa();
         datos = txtExpresion.getText();
@@ -460,7 +473,8 @@ public class FrameInterfaz extends javax.swing.JFrame {
         txtPostOrden.setText("");
         txtReglas.setText("");
         txtNotacion.setText("");
-        temp=0;
+        temp = 0;
+        emuLocal = "";
         String datos = txtExpresion.getText();
 
         //le puse este para que si ya están dados los valores no me los vuelva a pedir, a menos que le de en clean
@@ -468,10 +482,11 @@ public class FrameInterfaz extends javax.swing.JFrame {
             arbolIA = new ArbolIA();
         }
 
-        Nodo arbolExpresion = arbolIA.crear(datos);
+        arbolExpresion = arbolIA.crear(datos);
 
         txtReglas.append(arbolIA.getReglasEjecutadas());
         intermedio(arbolExpresion);
+        generarEmuLocal(arbolExpresion);
 
         JFrame ventana = new JFrame("Visualizador de Árboles - LyA2");
         PanelArbol panel = new PanelArbol(arbolExpresion);
@@ -492,8 +507,26 @@ public class FrameInterfaz extends javax.swing.JFrame {
 
         txtCodigo3Dir.append(arbolExpresion.getCodigoIntermedio());
 
+        arbolIA.emu86 += ".code \n"
+                + "mov ax,@data \n"
+                + "mov ds,ax \n";
+
+        String finalEmu = arbolIA.emu86 + emuLocal;
+        finalEmu += "\nmov ax,4c00h \n"
+                + "int 21h \n"
+                + "end";
+
+        JOptionPane.showMessageDialog(this, finalEmu);
+        Contador++;
+
+        String nombreArchivoAsm = "e" + Contador + ".asm";
+
+        generaEmutasm(finalEmu, Contador);
+        abrirEnEmu8086(nombreArchivoAsm);
+        sonido();
+
         //mostrar las tripletas gen
-        ArrayList<String[]> tripletas = crearTripletas(arbolExpresion.getCodigoIntermedio());
+        ArrayList<String[]> tripletas = arbolIA.getTripletas();
         FrameTripletas frameTripletas = new FrameTripletas(tripletas);
         frameTripletas.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         frameTripletas.setVisible(true);
@@ -502,7 +535,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
         FrameCuadruplos frameCuadruplos = new FrameCuadruplos(arbolExpresion);
         frameCuadruplos.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         frameCuadruplos.setVisible(true);
-        
+
     }//GEN-LAST:event_btnAgenteIAActionPerformed
 
     private ArrayList<String[]> crearTripletas(String codigoIntermedio) {
@@ -538,6 +571,142 @@ public class FrameInterfaz extends javax.swing.JFrame {
         }
 
         return tripletas;
+    }
+
+    public void generarEmuLocal(Nodo n) {
+        if (n != null) {
+            generarEmuLocal(n.getIzquierdo());
+            generarEmuLocal(n.getDerecho());
+
+            if (n.getIzquierdo() == null || n.getDerecho() == null) {
+                return;
+            }
+
+            switch (n.getDato()) {
+                case "+":
+                    System.out.println("add");
+                    izq = n.getIzquierdo().getDato();
+                    der = n.getDerecho().getDato();
+
+                    System.out.println("izq: " + izq);
+                    System.out.println("der: " + der);
+                    emuLocal += "mov ax, " + n.getIzquierdo().getDato() + "\n";
+                    emuLocal += "mov bx, " + n.getDerecho().getDato() + "\n";
+                    emuLocal += "add ax,bx\n\n";
+                    break;
+
+                case "-":
+                    System.out.println("sub");
+                    izq = n.getIzquierdo().getDato();
+                    der = n.getDerecho().getDato();
+
+                    emuLocal += "mov ax, " + n.getIzquierdo().getDato() + "\n";
+                    emuLocal += "mov bx, " + n.getDerecho().getDato() + "\n";
+                    emuLocal += "sub ax,bx\n\n";
+                    break;
+
+                case "/":
+                    System.out.println("div");
+                    izq = n.getIzquierdo().getDato();
+                    der = n.getDerecho().getDato();
+
+                    emuLocal += "mov ax, " + n.getIzquierdo().getDato() + "\n";
+                    emuLocal += "mov bx, " + n.getDerecho().getDato() + "\n";
+                    emuLocal += "xor dx,dx\n";
+                    emuLocal += "div bx\n\n";
+                    break;
+
+                case "*":
+                    System.out.println("mul");
+                    izq = n.getIzquierdo().getDato();
+                    der = n.getDerecho().getDato();
+
+                    emuLocal += "mov ax, " + n.getIzquierdo().getDato() + "\n";
+                    emuLocal += "mov bx, " + n.getDerecho().getDato() + "\n";
+                    emuLocal += "mul bx\n\n";
+                    break;
+            }// fin switch
+        }// if
+    }// generarEmuLocal
+
+    public void generaEmutasm(String emu, int i) {
+        try {
+            FileWriter escritor = new FileWriter("e" + i + ".asm");
+            escritor.write(emu);
+            escritor.close();
+            System.out.println("Archivo creado exitosamente");
+        } catch (Exception e) {
+            System.out.println("Ha ocurrido un error al crear el archivo");
+        }
+    }// generaEmutasm
+
+    public void sonido() {
+        try {
+            File sonido = new File("src/arbolE/sonido.wav");
+
+            if (sonido.exists()) {
+                AudioInputStream audioStream = AudioSystem.getAudioInputStream(sonido);
+                Clip clip = AudioSystem.getClip();
+                clip.open(audioStream);
+                clip.start();
+            } else {
+                JOptionPane.showMessageDialog(this, "No se encontró el archivo de sonido.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al reproducir el sonido.");
+        }
+    }
+
+    public void abrirEnEmu8086(String nombreArchivo) {
+        try {
+            File archivoAsm = new File(nombreArchivo);
+
+            if (!archivoAsm.exists()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No se encontró el archivo ASM:\n"
+                        + archivoAsm.getAbsolutePath()
+                );
+                return;
+            }
+
+            String rutaEmu8086 = "C:\\emu8086\\emu8086.exe";
+
+            File ejecutableEmu8086 = new File(rutaEmu8086);
+
+            if (!ejecutableEmu8086.exists()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No se encontró EMU8086 en:\n"
+                        + rutaEmu8086
+                        + "\n\nModifica la variable rutaEmu8086 con la ubicación correcta."
+                );
+                return;
+            }
+
+            ProcessBuilder proceso = new ProcessBuilder(
+                    ejecutableEmu8086.getAbsolutePath(),
+                    archivoAsm.getAbsolutePath()
+            );
+
+            proceso.start();
+
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo abrir el archivo en EMU8086:\n"
+                    + e.getMessage()
+            );
+        }
+    }
+
+    public Nodo getArbolExpresion() {
+        return arbolExpresion;
+    }
+
+    public void setArbolExpresion(Nodo arbolExpresion) {
+        this.arbolExpresion = arbolExpresion;
     }
 
     private void btnOptimizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOptimizarActionPerformed
