@@ -642,7 +642,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
 
     public void sonido() {
         try {
-            File sonido = new File("src/arbolE/sonido.wav");
+            File sonido = new File("src/arbolE/new-notification-022-370046.wav");
 
             if (sonido.exists()) {
                 AudioInputStream audioStream = AudioSystem.getAudioInputStream(sonido);
