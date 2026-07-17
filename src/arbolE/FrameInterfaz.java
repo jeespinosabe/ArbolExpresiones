@@ -42,6 +42,8 @@ public class FrameInterfaz extends javax.swing.JFrame {
     String izq, der;
     String emuLocal;
     int Contador;
+    int contadorTemporalesEmu;
+    String datosTemporalesEmu;
 
     public FrameInterfaz() {
         initComponents();
@@ -50,6 +52,8 @@ public class FrameInterfaz extends javax.swing.JFrame {
         emuLocal = "";
         izq = der = "";
         Contador = 0;
+        contadorTemporalesEmu = 0;
+        datosTemporalesEmu = "";
     }
 
     public void preOrden(Nodo n) {
@@ -475,6 +479,9 @@ public class FrameInterfaz extends javax.swing.JFrame {
         txtNotacion.setText("");
         temp = 0;
         emuLocal = "";
+        contadorTemporalesEmu = 0;
+        datosTemporalesEmu = "";
+
         String datos = txtExpresion.getText();
 
         //le puse este para que si ya están dados los valores no me los vuelva a pedir, a menos que le de en clean
@@ -507,11 +514,15 @@ public class FrameInterfaz extends javax.swing.JFrame {
 
         txtCodigo3Dir.append(arbolExpresion.getCodigoIntermedio());
 
-        arbolIA.emu86 += ".code \n"
+        String encabezadoCodigo = ".code \n"
                 + "mov ax,@data \n"
                 + "mov ds,ax \n";
 
-        String finalEmu = arbolIA.emu86 + emuLocal;
+        String finalEmu = arbolIA.emu86
+                + datosTemporalesEmu
+                + encabezadoCodigo
+                + emuLocal;
+
         finalEmu += "\nmov ax,4c00h \n"
                 + "int 21h \n"
                 + "end";
@@ -573,61 +584,86 @@ public class FrameInterfaz extends javax.swing.JFrame {
         return tripletas;
     }
 
-    public void generarEmuLocal(Nodo n) {
-        if (n != null) {
-            generarEmuLocal(n.getIzquierdo());
-            generarEmuLocal(n.getDerecho());
+    public String generarEmuLocal(Nodo n) {
+        if (n == null) {
+            return "";
+        }
 
-            if (n.getIzquierdo() == null || n.getDerecho() == null) {
-                return;
-            }
+        /*
+	 * Si es una hoja, regresa directamente el nombre
+	 * de la variable o el valor del nodo.
+         */
+        if (n.getIzquierdo() == null && n.getDerecho() == null) {
+            return n.getDato();
+        }
 
-            switch (n.getDato()) {
-                case "+":
-                    System.out.println("add");
-                    izq = n.getIzquierdo().getDato();
-                    der = n.getDerecho().getDato();
+        /*
+	 * Genera primero las operaciones de los hijos.
+	 * Cada hijo regresará una variable o una temporal.
+         */
+        String operandoIzquierdo = generarEmuLocal(n.getIzquierdo());
+        String operandoDerecho = generarEmuLocal(n.getDerecho());
 
-                    System.out.println("izq: " + izq);
-                    System.out.println("der: " + der);
-                    emuLocal += "mov ax, " + n.getIzquierdo().getDato() + "\n";
-                    emuLocal += "mov bx, " + n.getDerecho().getDato() + "\n";
-                    emuLocal += "add ax,bx\n\n";
-                    break;
+        //Crea una temporal para guardar el resultado
+        contadorTemporalesEmu++;
+        String temporalActual = "T" + contadorTemporalesEmu;
 
-                case "-":
-                    System.out.println("sub");
-                    izq = n.getIzquierdo().getDato();
-                    der = n.getDerecho().getDato();
+        datosTemporalesEmu += temporalActual + " dw ?\n";
 
-                    emuLocal += "mov ax, " + n.getIzquierdo().getDato() + "\n";
-                    emuLocal += "mov bx, " + n.getDerecho().getDato() + "\n";
-                    emuLocal += "sub ax,bx\n\n";
-                    break;
+        izq = operandoIzquierdo;
+        der = operandoDerecho;
 
-                case "/":
-                    System.out.println("div");
-                    izq = n.getIzquierdo().getDato();
-                    der = n.getDerecho().getDato();
+        System.out.println("Operador: " + n.getDato());
+        System.out.println("izq: " + izq);
+        System.out.println("der: " + der);
+        System.out.println("resultado: " + temporalActual);
 
-                    emuLocal += "mov ax, " + n.getIzquierdo().getDato() + "\n";
-                    emuLocal += "mov bx, " + n.getDerecho().getDato() + "\n";
-                    emuLocal += "xor dx,dx\n";
-                    emuLocal += "div bx\n\n";
-                    break;
+        switch (n.getDato()) {
+            case "+":
+                emuLocal += ";======== SUMA ==========\n";
+                emuLocal += "xor ax,ax\n";
+                emuLocal += "xor bx,bx\n";
+                emuLocal += "mov ax," + operandoIzquierdo + "\n";
+                emuLocal += "mov bx," + operandoDerecho + "\n";
+                emuLocal += "add ax,bx\n";
+                emuLocal += "mov " + temporalActual + ",ax\n\n";
+                break;
 
-                case "*":
-                    System.out.println("mul");
-                    izq = n.getIzquierdo().getDato();
-                    der = n.getDerecho().getDato();
+            case "-":
+                emuLocal += ";======== RESTA ==========\n";
+                emuLocal += "xor ax,ax\n";
+                emuLocal += "xor bx,bx\n";
+                emuLocal += "mov ax," + operandoIzquierdo + "\n";
+                emuLocal += "mov bx," + operandoDerecho + "\n";
+                emuLocal += "sub ax,bx\n";
+                emuLocal += "mov " + temporalActual + ",ax\n\n";
+                break;
 
-                    emuLocal += "mov ax, " + n.getIzquierdo().getDato() + "\n";
-                    emuLocal += "mov bx, " + n.getDerecho().getDato() + "\n";
-                    emuLocal += "mul bx\n\n";
-                    break;
-            }// fin switch
-        }// if
-    }// generarEmuLocal
+            case "*":
+                emuLocal += ";======== MULTIPLICACION ==========\n";
+                emuLocal += "xor ax,ax\n";
+                emuLocal += "xor bx,bx\n";
+                emuLocal += "xor dx,dx\n";
+                emuLocal += "mov ax," + operandoIzquierdo + "\n";
+                emuLocal += "mov bx," + operandoDerecho + "\n";
+                emuLocal += "mul bx\n";
+                emuLocal += "mov " + temporalActual + ",ax\n\n";
+                break;
+
+            case "/":
+                emuLocal += ";======== DIVISION ==========\n";
+                emuLocal += "xor ax,ax\n";
+                emuLocal += "xor bx,bx\n";
+                emuLocal += "xor dx,dx\n";
+                emuLocal += "mov ax," + operandoIzquierdo + "\n";
+                emuLocal += "mov bx," + operandoDerecho + "\n";
+                emuLocal += "div bx\n";
+                emuLocal += "mov " + temporalActual + ",ax\n\n";
+                break;
+        }
+
+        return temporalActual;
+    }
 
     public void generaEmutasm(String emu, int i) {
         try {
@@ -676,12 +712,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
             File ejecutableEmu8086 = new File(rutaEmu8086);
 
             if (!ejecutableEmu8086.exists()) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "No se encontró EMU8086 en:\n"
-                        + rutaEmu8086
-                        + "\n\nModifica la variable rutaEmu8086 con la ubicación correcta."
-                );
+                JOptionPane.showMessageDialog(this,"No se encontró EMU8086 en:\n"+ rutaEmu8086);
                 return;
             }
 
@@ -693,11 +724,7 @@ public class FrameInterfaz extends javax.swing.JFrame {
             proceso.start();
 
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "No se pudo abrir el archivo en EMU8086:\n"
-                    + e.getMessage()
-            );
+            JOptionPane.showMessageDialog(this, "No se pudo abrir el archivo en EMU8086:\n" + e.getMessage());
         }
     }
 

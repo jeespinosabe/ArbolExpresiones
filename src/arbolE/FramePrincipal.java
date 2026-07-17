@@ -20,6 +20,7 @@ public class FramePrincipal extends javax.swing.JFrame {
      */
     
     FrameInterfaz Interfaz;
+    FrameGenerador generador;
 
     public FramePrincipal() {
         initComponents();
@@ -27,6 +28,7 @@ public class FramePrincipal extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         Interfaz = new FrameInterfaz();
         FrameCuadruplos cuadruplos;
+        generador= new FrameGenerador();
     }
 
     /**
@@ -51,10 +53,10 @@ public class FramePrincipal extends javax.swing.JFrame {
         jButton5 = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
         jButton7 = new javax.swing.JButton();
-        jButton8 = new javax.swing.JButton();
+        btnGenerador = new javax.swing.JButton();
         jButton9 = new javax.swing.JButton();
         imgLogoCiscoScript = new Componentes.ImagenRedondeada();
-        jButton10 = new javax.swing.JButton();
+        btnSalir = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -131,8 +133,9 @@ public class FramePrincipal extends javax.swing.JFrame {
         jButton7.setText("Código intermedio");
         jButton7.addActionListener(this::jButton7ActionPerformed);
 
-        jButton8.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jButton8.setText("Notación Polaca");
+        btnGenerador.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        btnGenerador.setText("Generador asm");
+        btnGenerador.addActionListener(this::btnGeneradorActionPerformed);
 
         jButton9.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jButton9.setText("Estructuras Control");
@@ -162,7 +165,7 @@ public class FramePrincipal extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton8, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnGenerador, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(56, 56, 56)
                 .addComponent(imgLogoCiscoScript, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(20, 20, 20))
@@ -184,7 +187,7 @@ public class FramePrincipal extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton2)
                             .addComponent(jButton5)
-                            .addComponent(jButton8))
+                            .addComponent(btnGenerador))
                         .addGap(18, 18, 18)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton3)
@@ -193,8 +196,9 @@ public class FramePrincipal extends javax.swing.JFrame {
                 .addContainerGap(18, Short.MAX_VALUE))
         );
 
-        jButton10.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton10.setText("Salir");
+        btnSalir.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnSalir.setText("Salir");
+        btnSalir.addActionListener(this::btnSalirActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -208,7 +212,7 @@ public class FramePrincipal extends javax.swing.JFrame {
                     .addComponent(pnlSuperior, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnSalir, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -218,7 +222,7 @@ public class FramePrincipal extends javax.swing.JFrame {
                 .addGap(39, 39, 39)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton10)
+                .addComponent(btnSalir)
                 .addContainerGap(31, Short.MAX_VALUE))
         );
 
@@ -247,6 +251,15 @@ public class FramePrincipal extends javax.swing.JFrame {
         cuadruplos.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         cuadruplos.setVisible(true);
     }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void btnGeneradorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGeneradorActionPerformed
+        generador.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_btnGeneradorActionPerformed
+
+    private void btnSalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalirActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_btnSalirActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
         Nodo arbolExpresion = solicitarArbolExpresion();
@@ -370,18 +383,18 @@ public class FramePrincipal extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnArbolExpresion;
+    private javax.swing.JButton btnGenerador;
+    private javax.swing.JButton btnSalir;
     private Componentes.ImagenRedondeada imgFoto;
     private Componentes.ImagenRedondeada imgLogoCiscoScript;
     private Componentes.ImagenRedondeada imgLogoPato;
     private Componentes.ImagenRedondeada imgLogoTec;
-    private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
-    private javax.swing.JButton jButton8;
     private javax.swing.JButton jButton9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblTítulo;
